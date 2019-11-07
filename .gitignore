@@ -1,0 +1,6 @@
+/img
+/randn
+/sim/__pycache__
+/sim/.ipynb_checkpoints
+*.npy
+*.pdf
