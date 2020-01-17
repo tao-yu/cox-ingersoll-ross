@@ -4,3 +4,4 @@
 /sim/.ipynb_checkpoints
 *.npy
 *.pdf
+.vscode/launch.json

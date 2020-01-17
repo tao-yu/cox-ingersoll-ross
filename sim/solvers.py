@@ -37,11 +37,14 @@ def cir_dereich(k, lamda, theta, X_0, t, W):
     for k in range(1, W.shape[1]):
         W_inc = W[:,k] - W[:,k-1]
         dt = t[k] - t[k-1]
+        discriminant = (Y_temp + gamma*W_inc)**2/(4*(1-beta*dt)**2) \
+                       + (alpha*dt)/(1-beta*dt)
+
         Y_temp = (Y_temp + gamma*W_inc)/(2*(1-beta*dt)) \
                  + np.sqrt(
-                     (Y_temp + gamma*W_inc)**2/(4*(1-beta*dt)**2) \
-                     + (alpha*dt)/(1-beta*dt)
+                     np.abs(discriminant)
                  )
+        Y_temp[discriminant < 0] = 0
         Y_sol[:,k] = Y_temp
     X_sol = Y_sol**2
     return t, X_sol

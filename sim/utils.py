@@ -22,3 +22,12 @@ class MatlabRandn:
 
     def reset(self):
         self._index = 0
+
+
+def mc_mean(a, axis=None):
+    if axis is None:
+        a = a.flatten()
+    mc_mean = np.mean(a, axis=axis)
+    upper = mc_mean + 1.96*np.std(a, axis=axis)/np.sqrt(a.shape[axis])
+    lower = mc_mean - 1.96*np.std(a, axis=axis)/np.sqrt(a.shape[axis])
+    return mc_mean, lower, upper
