@@ -1,15 +1,6 @@
 import numpy as np
 
 
-def brownian_paths(T, N, M):
-    dt = T/N
-    dW = np.random.normal(0, np.sqrt(dt), size=(M, N))
-    dW = np.hstack([np.zeros((M, 1)), dW])
-    W = np.cumsum(dW, axis=1)        
-    t = np.arange(0, T+dt, dt)
-    return t, W
-
-
 def solve_em(f, g, X_0, t, W):
     X_em = np.zeros(W.shape)
     
