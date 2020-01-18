@@ -48,7 +48,7 @@ def explicit_scheme(l, k, lamda, theta, X_0, t, W):
     for j in range(1, W.shape[1]):
         W_inc = W[:,j] - W[:,j-1]
         dt = t[j] - t[j-1]
-        X_temp = ( (1-dt*k/2)*np.sqrt(X_temp) + (theta*W_inc)/(2*(1-dt*k/2)))**2 \
-        + (lamda*k-theta**2/4)*dt + l*((W_inc)**2 - dt)
+        X_temp = ((1-dt*k/2)*np.sqrt(X_temp) + (theta*W_inc)/(2*(1-dt*k/2)))**2 + (lamda*k-theta**2/4)*dt + l*((W_inc)**2 - dt)
+        X_temp[X_temp<0] = 0
         X_sol[:,j] = X_temp
     return t, X_sol
