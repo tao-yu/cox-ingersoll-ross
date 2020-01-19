@@ -14,6 +14,21 @@ def solve_em(f, g, X_0, t, W):
     return t, X_em
 
 
+def solve_milstein(f, g, g_deriv, X_0, t, W):
+    X_em = np.zeros(len(W))
+    X_temp = X_0
+    X_em[0] = X_0
+    for j in range(1, len(W)):
+        W_inc = W[j] - W[j-1]
+        dt = t[j] - t[j-1]
+        X_temp = X_temp \
+                 + dt*f(X_temp) \
+                 + g(X_temp) * W_inc \
+                 + 0.5 * g(X_temp) * g_deriv(X_temp) * (W_inc**2 - dt)
+        X_em[j] = X_temp
+    return t, X_em
+
+
 def implicit_scheme(k, lamda, theta, X_0, t, W):
     alpha = (4*k*lamda - theta**2)/8
     beta = -k/2
