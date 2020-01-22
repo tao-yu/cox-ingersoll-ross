@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import ncx2
 
 
 def solve_em(f, g, X_0, t, W):
@@ -67,3 +68,18 @@ def explicit_scheme(l, k, lamda, theta, X_0, t, W):
         X_temp[X_temp<0] = 0
         X_sol[:,j] = X_temp
     return t, X_sol
+
+
+def direct_simulation(k, lamda, theta, T, N, X_0):
+    dt = T/N
+    c = (2*k)/((1-np.exp(-k*dt))*theta**2)
+    df = 4*k*lamda/theta**2
+    X_temp = X_0
+    X_sol = np.zeros(N+1)
+    X_sol[0] = X_0
+    for j in range(1, N+1):
+        nc = 2*c*X_temp*np.exp(-k*dt)
+        Y = ncx2.rvs(df, nc, size=1)
+        X_temp = Y/(2*c)
+        X_sol[j] = X_temp
+    return np.linspace(0, T, N+1), X_sol
