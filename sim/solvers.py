@@ -70,6 +70,38 @@ def explicit_scheme(l, k, lamda, theta, X_0, t, W):
     return t, X_sol
 
 
+def deelstra_delbaen(k, lamda, theta, X_0, t, W):
+    cir_drift = lambda x: k*(lamda - x)
+    cir_diff = lambda x: theta*np.sqrt(np.maximum(x, 0))
+
+    X_em = np.zeros(W.shape)
+    
+    X_em[:,0] = X_0
+    X_temp = np.copy(X_em[:,0])
+    for j in range(1, W.shape[1]):
+        W_inc = W[:,j] - W[:,j-1]
+        dt = t[j] - t[j-1]
+        X_temp = X_temp + dt*cir_drift(X_temp) + cir_diff(X_temp)*W_inc
+        X_em[:,j] = X_temp
+    return t, X_em
+
+
+def diop(k, lamda, theta, X_0, t, W):
+    cir_drift = lambda x: k*(lamda - x)
+    cir_diff = lambda x: theta*np.sqrt(x)
+
+    X_em = np.zeros(W.shape)
+    
+    X_em[:,0] = X_0
+    X_temp = np.copy(X_em[:,0])
+    for j in range(1, W.shape[1]):
+        W_inc = W[:,j] - W[:,j-1]
+        dt = t[j] - t[j-1]
+        X_temp = np.abs(X_temp + dt*cir_drift(X_temp) + cir_diff(X_temp)*W_inc)
+        X_em[:,j] = X_temp
+    return t, X_em
+
+
 def direct_simulation(k, lamda, theta, T, N, X_0):
     dt = T/N
     c = (2*k)/((1-np.exp(-k*dt))*theta**2)
