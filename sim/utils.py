@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import scipy.stats
 
 
 class MatlabRandn:
@@ -25,12 +26,13 @@ class MatlabRandn:
         self._index = 0
 
 
-def mc_mean(a, axis=None):
+def mc_mean(a, ci_width=0.95, axis=None):
     if axis is None:
         a = a.flatten()
     mc_mean = np.mean(a, axis=axis)
-    upper = mc_mean + 1.96*np.std(a, axis=axis)/np.sqrt(a.shape[axis])
-    lower = mc_mean - 1.96*np.std(a, axis=axis)/np.sqrt(a.shape[axis])
+    quantile = scipy.stats.norm.ppf(1-(1-ci_width)/2)
+    upper = mc_mean + quantile*np.std(a, axis=axis)/np.sqrt(a.shape[axis])
+    lower = mc_mean - quantile*np.std(a, axis=axis)/np.sqrt(a.shape[axis])
     return mc_mean, lower, upper
 
 
@@ -43,14 +45,14 @@ def brownian_paths(T, N, M):
     return t, W
 
 
-def estimate_order(scheme, T, n, M):
+def estimate_order(scheme, T, n, M, ci_width=0.95):
     t, W = brownian_paths(T, 2*n, M)
     t_n, X_n = scheme(t[::2], W[:,::2])
     t_2n, X_2n = scheme(t, W)
-    S_n = np.array(mc_mean(np.amax(np.abs(X_n - X_2n[:,::2]), axis=1), axis=0))
+    S_n = np.array(mc_mean(np.amax(np.abs(X_n - X_2n[:,::2]), axis=1), axis=0, ci_width=ci_width))
 
     t_10, W_10 = brownian_paths(T, 20*n, M)
     t_10n, X_10n = scheme(t_10[::2], W_10[:,::2])
     t_20n, X_20n = scheme(t_10, W_10)
-    S_10n = np.array(mc_mean(np.amax(np.abs(X_10n - X_20n[:,::2]), axis=1), axis=0))
+    S_10n = np.array(mc_mean(np.amax(np.abs(X_10n - X_20n[:,::2]), axis=1), axis=0, ci_width=ci_width))
     return np.log10(S_n) - np.log10(S_10n)
