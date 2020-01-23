@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import scipy.stats
+from numba import jit
 
 
 class MatlabRandn:
@@ -41,6 +42,18 @@ def brownian_paths(T, N, M):
     dW = np.random.normal(0, np.sqrt(dt), size=(M, N))
     dW = np.hstack([np.zeros((M, 1)), dW])
     W = np.cumsum(dW, axis=1)        
+    t = np.arange(0, T+dt, dt)
+    return t, W
+
+
+@jit(nopython=True)
+def brownian_paths_jit(T, N, M):
+    dt = T/N
+    dW = np.zeros((M, N+1))
+    dW[:,1:] = np.random.normal(0, np.sqrt(dt), size=(M, N))
+    W = np.zeros(dW.shape)
+    for i in range(0, W.shape[0]):
+        W[i,:] = np.cumsum(dW[i,:])
     t = np.arange(0, T+dt, dt)
     return t, W
 

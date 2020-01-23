@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import ncx2
+from numba import jit
 
 
 def solve_em(f, g, X_0, t, W):
@@ -56,14 +57,16 @@ def implicit_scheme(k, lamda, theta, X_0, t, W):
     return t, X_sol
 
 
+@jit(nopython=True)
 def explicit_scheme(l, k, lamda, theta, X_0, t, W):
     X_sol = np.zeros(W.shape)
     X_sol[:,0] = np.sqrt(X_0)
-    X_temp = np.copy(X_sol[:,0])
+    X_temp = X_sol[:,0]
     
+    dt = t[1] - t[0]
     for j in range(1, W.shape[1]):
         W_inc = W[:,j] - W[:,j-1]
-        dt = t[j] - t[j-1]
+        #dt = t[j] - t[j-1]
         X_temp = ((1-dt*k/2)*np.sqrt(X_temp) + (theta*W_inc)/(2*(1-dt*k/2)))**2 + (lamda*k-theta**2/4)*dt + l*((W_inc)**2 - dt)
         X_temp[X_temp<0] = 0
         X_sol[:,j] = X_temp
