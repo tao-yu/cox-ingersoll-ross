@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import scipy.stats
-from numba import jit
+from numba import jit, njit
 
 
 class MatlabRandn:
@@ -39,9 +39,22 @@ def mc_mean(a, ci_width=0.95, axis=None):
 
 def brownian_paths(T, N, M):
     dt = T/N
-    dW = np.random.normal(0, np.sqrt(dt), size=(M, N))
-    dW = np.hstack([np.zeros((M, 1)), dW])
+    #dW = np.random.normal(0, np.sqrt(dt), size=(M, N))
+    #dW = np.hstack([np.zeros((M, 1)), dW])
+    dW = np.zeros((M, N+1), order="F")
+    dW[:,1:] = np.random.normal(0, np.sqrt(dt), size=(M, N))
     W = np.cumsum(dW, axis=1)        
+    t = np.arange(0, T+dt, dt)
+    return t, W
+
+
+def brownian_paths_T(T, N, M):
+    dt = T/N
+    #dW = np.random.normal(0, np.sqrt(dt), size=(M, N))
+    #dW = np.hstack([np.zeros((M, 1)), dW])
+    dW = np.zeros((N+1, M))
+    dW[1:,:] = np.random.normal(0, np.sqrt(dt), size=(N, M))
+    W = np.cumsum(dW, axis=0)        
     t = np.arange(0, T+dt, dt)
     return t, W
 
@@ -68,4 +81,17 @@ def estimate_order(scheme, T, n, M):
     t_10n, X_10n = scheme(t_10[::2], W_10[:,::2])
     t_20n, X_20n = scheme(t_10, W_10)
     S_10n = np.array(np.mean(np.amax(np.abs(X_10n - X_20n[:,::2]), axis=1), axis=0))
+    return np.log10(S_n) - np.log10(S_10n)
+
+
+def estimate_order_T(scheme, T, n, M):
+    t, W = brownian_paths_T(T, 2*n, M)
+    t_n, X_n = scheme(t[::2], W[::2,:])
+    t_2n, X_2n = scheme(t, W)
+    S_n = np.mean(np.amax(np.abs(X_n - X_2n[::2,:]), axis=0))
+
+    t_10, W_10 = brownian_paths_T(T, 20*n, M)
+    t_10n, X_10n = scheme(t_10[::2], W_10[::2,:])
+    t_20n, X_20n = scheme(t_10, W_10)
+    S_10n = np.mean(np.amax(np.abs(X_10n - X_20n[::2,:]), axis=0))
     return np.log10(S_n) - np.log10(S_10n)
