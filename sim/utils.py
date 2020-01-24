@@ -48,14 +48,14 @@ def brownian_paths(T, N, M):
     return t, W
 
 
-def estimate_order(scheme, T, n, M):
+def estimate_order(k, lamda, theta, X_0, scheme, T, n, M):
     t, W = brownian_paths(T, 2*n, M)
-    t_n, X_n = scheme(t[::2], W[:,::2])
-    t_2n, X_2n = scheme(t, W)
+    t_n, X_n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t[::2], W=W[:,::2])
+    t_2n, X_2n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t, W=W)
     S_n = np.mean(np.amax(np.abs(X_n - X_2n[:,::2]), axis=1))
 
     t_10, W_10 = brownian_paths(T, 20*n, M)
-    t_10n, X_10n = scheme(t_10[::2], W_10[:,::2])
-    t_20n, X_20n = scheme(t_10, W_10)
+    t_10n, X_10n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10[::2], W=W_10[:,::2])
+    t_20n, X_20n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10, W=W_10)
     S_10n = np.mean(np.amax(np.abs(X_10n - X_20n[:,::2]), axis=1))
     return np.log10(S_n) - np.log10(S_10n)
