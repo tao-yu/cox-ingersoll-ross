@@ -44,7 +44,7 @@ def brownian_paths(T, N, M):
     dW = np.zeros((M, N+1))
     dW[:,1:] = np.random.normal(0, np.sqrt(dt), size=(M, N))
     W = np.cumsum(dW, axis=1)        
-    t = np.arange(0, T+dt, dt)
+    t = np.linspace(0, T, N+1)
     return t, W
 
 
@@ -58,4 +58,4 @@ def estimate_order(k, lamda, theta, X_0, scheme, T, n, M):
     t_10n, X_10n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10[::2], W=W_10[:,::2])
     t_20n, X_20n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10, W=W_10)
     S_10n = np.mean(np.amax(np.abs(X_10n - X_20n[:,::2]), axis=1))
-    return np.log10(S_n) - np.log10(S_10n)
+    return np.log10(S_n) - np.log10(S_10n), np.log10(S_n), np.log10(S_10n)
