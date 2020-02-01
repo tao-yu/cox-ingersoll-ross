@@ -108,7 +108,7 @@ def diop(k, lamda, theta, X_0, t, W):
     return t, X_em
 
 
-def direct_simulation(k, lamda, theta, T, N, X_0):
+def direct_simulation(k, lamda, theta, X_0, T, N):
     dt = T/N
     c = (2*k)/((1-np.exp(-k*dt))*theta**2)
     df = 4*k*lamda/theta**2
