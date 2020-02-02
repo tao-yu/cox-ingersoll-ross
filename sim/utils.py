@@ -5,7 +5,7 @@ from numba import jit, njit
 from scipy.stats import gaussian_kde
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-from solvers import direct_simulation
+from solvers import direct_simulation, implicit_scheme
 
 
 class MatlabRandn:
@@ -83,3 +83,21 @@ def plot_distribution(k, lamda, theta, X_0, scheme, T, N_set, M, legend=False):
     plt.plot(x, kde_dist(x), "--", label="True", color="black", linewidth=2)
     if legend:
         plt.legend()
+
+
+def cir_bond_price(k, lamda, theta, X_t, T):
+    t = 0
+    h = np.sqrt(k**2 + 2*theta**2)
+    A = ((2*h*np.exp((k+h)*(T-t)/2))/(2*h+(k+h)*(np.exp((T-t)*h)-1)))**(2*k*lamda/theta**2)
+    B = (2*(np.exp((T-t)*h)-1))/(2*h+(k+h)*(np.exp((T-t)*h)-1))
+    return A*np.exp(-B*X_t)
+
+
+def binary_option(k, lamda, theta, X_0, T, N, M, payoff):
+    t, W = brownian_paths(T, N, M)
+    _, X = implicit_scheme(k, lamda, theta, X_0, t, W)
+    X_int = np.sum(X, axis=0)*(T/N)
+    val = np.exp(-X_int) * payoff(X[-1])
+    mc_mean = np.mean(val)
+    sd = np.std(val)
+    return mc_mean, mc_mean - 1.96*sd/np.sqrt(M),  mc_mean + 1.96*sd/np.sqrt(M)
