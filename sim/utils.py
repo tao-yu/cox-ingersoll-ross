@@ -52,18 +52,18 @@ def brownian_paths(T, N, M):
 
 def estimate_order(k, lamda, theta, X_0, scheme, T, n, M):
     t, W = brownian_paths(T, 2*n, M)
-    t_n, X_n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t[::2], W=W[:,::2])
+    t_n, X_n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t[::2], W=W[::2,:])
     t_2n, X_2n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t, W=W)
-    S_n = np.mean(np.amax(np.abs(X_n - X_2n[:,::2]), axis=1))
+    S_n = np.mean(np.amax(np.abs(X_n - X_2n[::2,:]), axis=0))
 
     t_10, W_10 = brownian_paths(T, 20*n, M)
-    t_10n, X_10n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10[::2], W=W_10[:,::2])
+    t_10n, X_10n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10[::2], W=W_10[::2,:])
     t_20n, X_20n = scheme(k=k, lamda=lamda, theta=theta, X_0=X_0, t=t_10, W=W_10)
-    S_10n = np.mean(np.amax(np.abs(X_10n - X_20n[:,::2]), axis=1))
+    S_10n = np.mean(np.amax(np.abs(X_10n - X_20n[::2,:]), axis=0))
     return np.log10(S_n) - np.log10(S_10n), np.log10(S_n), np.log10(S_10n)
 
 
-def plot_distribution(k, lamda, theta, X_0, scheme, T, N_set, M):
+def plot_distribution(k, lamda, theta, X_0, scheme, T, N_set, M, legend=False):
     colors = cm.rainbow(np.linspace(0, 1, len(N_set)))[::-1]
     for i, n in enumerate(N_set):
         t, W = brownian_paths(T, int(n), M)
@@ -71,7 +71,7 @@ def plot_distribution(k, lamda, theta, X_0, scheme, T, N_set, M):
 
         x = np.linspace(0, 5, 100)
         kde_sim = gaussian_kde(X_sim[-1,:])
-        plt.plot(x, kde_sim(x), color=colors[i])
+        plt.plot(x, kde_sim(x), color=colors[i], label=str(n))
 
     X_T = np.zeros(M)
     for i in range(M):
@@ -81,3 +81,5 @@ def plot_distribution(k, lamda, theta, X_0, scheme, T, N_set, M):
     kde_dist = gaussian_kde(X_T)
 
     plt.plot(x, kde_dist(x), "--", label="True", color="black", linewidth=2)
+    if legend:
+        plt.legend()
