@@ -6,13 +6,13 @@ from numba import jit, njit
 def solve_em(f, g, X_0, t, W):
     X_em = np.zeros(W.shape)
     
-    X_em[:,0] = X_0
-    X_temp = np.copy(X_em[:,0])
-    for j in range(1, W.shape[1]):
-        W_inc = W[:,j] - W[:,j-1]
+    X_em[0] = X_0
+    X_temp = X_em[0]
+    for j in range(1, W.shape[0]):
+        W_inc = W[j] - W[j-1]
         dt = t[j] - t[j-1]
         X_temp = X_temp + dt*f(X_temp) + g(X_temp)*W_inc
-        X_em[:,j] = X_temp
+        X_em[j] = X_temp
     return t, X_em
 
 
@@ -39,11 +39,11 @@ def implicit_scheme(k, lamda, theta, X_0, t, W):
 
     Y_sol = np.zeros(W.shape)
     
-    Y_sol[:,0] = np.sqrt(X_0)
-    Y_temp = Y_sol[:,0]
+    Y_sol[0] = np.sqrt(X_0)
+    Y_temp = Y_sol[0]
     #set_trace()
-    for j in range(1, W.shape[1]):
-        W_inc = W[:,j] - W[:,j-1]
+    for j in range(1, W.shape[0]):
+        W_inc = W[j] - W[j-1]
         dt = t[j] - t[j-1]
         discriminant = (Y_temp + gamma*W_inc)**2/(4*(1-beta*dt)**2) \
                        + (alpha*dt)/(1-beta*dt)
@@ -53,7 +53,7 @@ def implicit_scheme(k, lamda, theta, X_0, t, W):
                      np.abs(discriminant)
                  )
         Y_temp[discriminant < 0] = 0
-        Y_sol[:,j] = Y_temp
+        Y_sol[j] = Y_temp
     X_sol = Y_sol**2
     return t, X_sol
 
@@ -61,16 +61,16 @@ def implicit_scheme(k, lamda, theta, X_0, t, W):
 @njit
 def explicit_scheme(k, lamda, theta, X_0, t, W, l=0):
     X_sol = np.zeros(W.shape)
-    X_sol[:,0] = np.sqrt(X_0)
-    X_temp = X_sol[:,0]
+    X_sol[0] = np.sqrt(X_0)
+    X_temp = X_sol[0]
     
     dt = t[1] - t[0]
-    for j in range(1, W.shape[1]):
-        W_inc = W[:,j] - W[:,j-1]
+    for j in range(1, W.shape[0]):
+        W_inc = W[j] - W[j-1]
         #dt = t[j] - t[j-1]
         X_temp = ((1-dt*k/2)*np.sqrt(X_temp) + (theta*W_inc)/(2*(1-dt*k/2)))**2 + (lamda*k-theta**2/4)*dt + l*((W_inc)**2 - dt)
         X_temp[X_temp<0] = 0
-        X_sol[:,j] = X_temp
+        X_sol[j] = X_temp
     return t, X_sol
 
 
@@ -81,13 +81,13 @@ def deelstra_delbaen(k, lamda, theta, X_0, t, W):
 
     X_em = np.zeros(W.shape)
     
-    X_em[:,0] = X_0
-    X_temp = np.copy(X_em[:,0])
-    for j in range(1, W.shape[1]):
-        W_inc = W[:,j] - W[:,j-1]
+    X_em[0] = X_0
+    X_temp = X_em[0]
+    for j in range(1, W.shape[0]):
+        W_inc = W[j] - W[j-1]
         dt = t[j] - t[j-1]
         X_temp = X_temp + dt*cir_drift(X_temp) + cir_diff(X_temp)*W_inc
-        X_em[:,j] = X_temp
+        X_em[j] = X_temp
     return t, X_em
 
 
@@ -98,13 +98,13 @@ def diop(k, lamda, theta, X_0, t, W):
 
     X_em = np.zeros(W.shape)
     
-    X_em[:,0] = X_0
-    X_temp = np.copy(X_em[:,0])
-    for j in range(1, W.shape[1]):
-        W_inc = W[:,j] - W[:,j-1]
+    X_em[0] = X_0
+    X_temp = X_em[0]
+    for j in range(1, W.shape[0]):
+        W_inc = W[j] - W[j-1]
         dt = t[j] - t[j-1]
         X_temp = np.abs(X_temp + dt*cir_drift(X_temp) + cir_diff(X_temp)*W_inc)
-        X_em[:,j] = X_temp
+        X_em[j] = X_temp
     return t, X_em
 
 

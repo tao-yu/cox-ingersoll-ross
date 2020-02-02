@@ -43,11 +43,9 @@ def mc_mean(a, ci_width=0.95, axis=None):
 
 def brownian_paths(T, N, M):
     dt = T/N
-    #dW = np.random.normal(0, np.sqrt(dt), size=(M, N))
-    #dW = np.hstack([np.zeros((M, 1)), dW])
-    dW = np.zeros((M, N+1))
-    dW[:,1:] = np.random.normal(0, np.sqrt(dt), size=(M, N))
-    W = np.cumsum(dW, axis=1)        
+    dW = np.zeros((N+1, M))
+    dW[1:,:] = np.random.normal(0, np.sqrt(dt), size=(N, M))
+    W = np.cumsum(dW, axis=0)        
     t = np.linspace(0, T, N+1)
     return t, W
 
@@ -72,7 +70,7 @@ def plot_distribution(k, lamda, theta, X_0, scheme, T, N_set, M):
         t, X_sim = scheme(k, lamda, theta, X_0, t, W)
 
         x = np.linspace(0, 5, 100)
-        kde_sim = gaussian_kde(X_sim[:,-1])
+        kde_sim = gaussian_kde(X_sim[-1,:])
         plt.plot(x, kde_sim(x), color=colors[i])
 
     X_T = np.zeros(M)
