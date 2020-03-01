@@ -93,7 +93,7 @@ def cir_bond_price(k, lamda, theta, X_t, T):
     return A*np.exp(-B*X_t)
 
 
-def binary_option(k, lamda, theta, X_0, T, N, M, payoff):
+def price_derivative(k, lamda, theta, X_0, T, N, M, payoff):
     t, W = brownian_paths(T, N, M)
     _, X = implicit_scheme(k, lamda, theta, X_0, t, W)
     X_int = np.sum(X, axis=0)*(T/N)
