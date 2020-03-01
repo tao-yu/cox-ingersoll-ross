@@ -5,3 +5,4 @@
 *.npy
 *.pdf
 .vscode/launch.json
+/experiments
