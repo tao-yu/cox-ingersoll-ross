@@ -121,3 +121,84 @@ def direct_simulation(k, lamda, theta, X_0, T, N):
         X_temp = Y/(2*c)
         X_sol[j] = X_temp
     return np.linspace(0, T, N+1), X_sol
+
+def euler_type(k, lamda, theta, X_0, t, W, funcs):
+    def str_to_func(name):
+        if name == "max":
+            return lambda x:np.maximum(x, 0)
+        elif name == "abs":
+            return lambda x:np.abs(x)
+        elif name == "I":
+            return lambda x:x
+        else:
+            raise ValueError("Unknown function name") 
+
+    g0 = str_to_func(funcs[0])
+    g1 = str_to_func(funcs[1])
+    g2 = str_to_func(funcs[2])
+
+    X_em = np.zeros(W.shape)
+    
+    X_em[0] = X_0
+    X_temp = X_em[0]
+    for j in range(1, W.shape[0]):
+        W_inc = W[j] - W[j-1]
+        dt = t[j] - t[j-1]
+        X_temp = g0(X_temp + (k*(lamda - g1(X_temp)))*dt) + theta*np.sqrt(g2(X_temp))*W_inc
+        X_em[j] = X_temp
+    return t, X_em
+
+
+def hybrid_adaptive(k, lamda, theta, X_0, T, h_max, h_min, r):
+    alpha = (4*k*lamda - theta**2)/8
+    beta = -k/2
+    gamma = theta/2
+    
+    max_steps = int(T//h_min + 1)
+    t = np.zeros(max_steps)
+    Y = np.zeros(max_steps)
+    
+    backstop_usage = np.zeros(max_steps)
+    
+    Y[0] = np.sqrt(X_0)
+    Y_temp = Y[0]
+    
+    for j in range(1, max_steps):
+        h = h_max * np.minimum(1, np.abs(Y_temp)**r)
+        t_next = t[j-1] + h
+        
+        if h < h_min and t_next < T:
+            backstop_usage[j] = 1
+            t[j] = t[j-1] + h_min
+            W_inc = np.random.normal(0, np.sqrt(h_min))
+            discriminant = (Y_temp + gamma*W_inc)**2/(4*(1-beta*h_min)**2) \
+                + (alpha*h_min)/(1-beta*h_min)
+            Y_temp = (Y_temp + gamma*W_inc)/(2*(1-beta*h_min)) \
+                     + np.sqrt(
+                         np.abs(discriminant)
+                     )
+            Y[j] = Y_temp
+            
+        else:
+            if t_next > T:
+                h = T - t[j-1]
+                t_next = T
+            t[j] = t[j-1] + h
+            W_inc = np.random.normal(0, np.sqrt(h))
+            Y_temp = Y_temp + h*(alpha/Y_temp + beta*Y_temp) + gamma * W_inc
+            if Y_temp < 0:
+                backstop_usage[j] = 2
+                discriminant = (Y_temp + gamma*W_inc)**2/(4*(1-beta*h)**2) \
+                    + (alpha*h)/(1-beta*h)
+                Y_temp = (Y_temp + gamma*W_inc)/(2*(1-beta*h)) \
+                         + np.sqrt(
+                             np.abs(discriminant)
+                         )
+                Y[j] = Y_temp
+            else:
+                Y[j] = Y_temp
+        if t_next >= T:
+            break
+
+    X = Y**2
+    return t[:j+1], X[:j+1], backstop_usage[:j+1]
