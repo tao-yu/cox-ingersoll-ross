@@ -6,6 +6,9 @@ from scipy.stats import gaussian_kde
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from solvers import direct_simulation, implicit_scheme
+import statsmodels.api as sm
+from scipy.stats import ncx2
+from scipy.stats import probplot
 
 
 class MatlabRandn:
@@ -101,3 +104,35 @@ def price_derivative(k, lamda, theta, X_0, T, N, M, payoff):
     mc_mean = np.mean(val)
     sd = np.std(val)
     return mc_mean, mc_mean - 1.96*sd/np.sqrt(M),  mc_mean + 1.96*sd/np.sqrt(M)
+
+
+def show_probplot(k, lamda, theta, X_0, T, simulated):
+    c = (2*k)/((1-np.exp(-k*T))*theta**2)
+    df = 4*k*lamda/theta**2
+    nc = 2*c*X_0*np.exp(-k*T)
+    rv = ncx2(df, nc, scale=1/(2*c))
+    x, y = probplot(simulated, dist = rv, fit=False)
+    plt.plot(x, y, "bo")
+    plt.title("Probability Plot")
+    plt.xlabel("Theoretical quantiles")
+    plt.ylabel("Ordered Values")
+    x = np.linspace(min(x[0], y[0]), max(x[-1], y[-1]), 2)
+    plt.plot(x, x, "k--")
+    plt.gca().set_aspect("equal")
+
+    
+def show_qqplot(k, lamda, theta, X_0, T, simulated):
+    c = (2*k)/((1-np.exp(-k*T))*theta**2)
+    df = 4*k*lamda/theta**2
+    nc = 2*c*X_0*np.exp(-k*T)
+    pp = sm.ProbPlot(simulated, ncx2, distargs=(df,nc), scale=1/(2*c))
+    x = pp.theoretical_quantiles
+    y = pp.sample_quantiles
+    
+    plt.plot(x, y, "bo")
+    plt.title("Probability Plot")
+    plt.xlabel("Theoretical quantiles")
+    plt.ylabel("Sample quantiles")
+    x = np.linspace(min(x[0], y[0]), max(x[-1], y[-1]), 2)
+    plt.plot(x, x, "k--")
+    plt.gca().set_aspect("equal")
