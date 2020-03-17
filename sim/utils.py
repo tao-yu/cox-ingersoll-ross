@@ -2,7 +2,7 @@ import numpy as np
 import os
 import scipy.stats
 from numba import jit, njit
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, kstest
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from solvers import direct_simulation, implicit_scheme
@@ -136,3 +136,13 @@ def show_qqplot(k, lamda, theta, X_0, T, simulated):
     x = np.linspace(min(x[0], y[0]), max(x[-1], y[-1]), 2)
     plt.plot(x, x, "k--")
     plt.gca().set_aspect("equal")
+
+
+def perform_kstest(k, lamda, theta, X_0, T, simulated):
+    c = (2*k)/((1-np.exp(-k*T))*theta**2)
+    df = 4*k*lamda/theta**2
+    nc = 2*c*X_0*np.exp(-k*T)
+    rv = ncx2(df, nc, scale=1/(2*c))
+
+    cdf = lambda x: rv.cdf(x)
+    return kstest(simulated, cdf=cdf)
