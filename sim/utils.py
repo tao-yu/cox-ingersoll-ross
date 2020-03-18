@@ -146,3 +146,16 @@ def perform_kstest(k, lamda, theta, X_0, T, simulated):
 
     cdf = lambda x: rv.cdf(x)
     return kstest(simulated, cdf=cdf)
+
+
+def correlated_paths(T, N, M, cor):
+    dt = T/N
+    dW1 = np.zeros((N+1, M))
+    dW2 = np.zeros((N+1, M))
+    dW1[1:,:] = np.random.normal(0, np.sqrt(dt), size=(N, M))
+    W1 = np.cumsum(dW1, axis=0)        
+    dW2[1:,:] = cor * dW1[1:,:] + np.random.normal(0, np.sqrt(dt), size=(N, M)) * np.sqrt(1-cor**2)
+    W2 = np.cumsum(dW2, axis=0)        
+
+    t = np.linspace(0, T, N+1)
+    return t, W1, W2
