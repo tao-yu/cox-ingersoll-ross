@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from numba import njit
 from solvers import implicit_scheme, diop, direct_simulation, full_truncation, higham_mao
 from utils import brownian_paths, correlated_paths
+import time
 
 
 @njit
@@ -110,11 +111,13 @@ def heston_final_time(k, lamda, theta, X_0, T, h_max, h_min, r, S_0, rf, cor, M)
     h_mean_total = 0
     for i in range(M):
         t_cir, X_cir, dW_V, bs = single_adaptive(k, lamda, theta, X_0, T, h_max, h_min, r)
+
         h_mean_total += np.mean(np.diff(t_cir))
         X_final[i] = X_cir[-1]
 
         _, S = single_heston_log(S_0, rf, cor, t_cir, X_cir, dW_V)
         S_final[0, i] = S[-1]
+
         _, S = single_heston_milstein(S_0, rf, cor, t_cir, X_cir, dW_V)
         S_final[1, i] = S[-1]
     
