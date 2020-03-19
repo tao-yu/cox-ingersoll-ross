@@ -1,3 +1,10 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from numba import njit
+from solvers import implicit_scheme, diop, direct_simulation, full_truncation, higham_mao
+from utils import brownian_paths, correlated_paths
+
+
 @njit
 def single_adaptive(k, lamda, theta, X_0, T, h_max, h_min, r):
     alpha = (4*k*lamda - theta**2)/8
@@ -96,17 +103,20 @@ def single_heston_log(S_0, rf, cor, t_cir, X_cir, dW_V):
 
 
 @njit
-def heston_final_time(S_scheme, k, lamda, theta, X_0, T, h_max, h_min, r, S_0, rf, cor, M):
-    S_final = np.zeros(M)
+def heston_final_time(k, lamda, theta, X_0, T, h_max, h_min, r, S_0, rf, cor, M):
+    S_final = np.zeros((2, M))
     X_final = np.zeros(M)
-    
+        
     h_mean_total = 0
     for i in range(M):
         t_cir, X_cir, dW_V, bs = single_adaptive(k, lamda, theta, X_0, T, h_max, h_min, r)
         h_mean_total += np.mean(np.diff(t_cir))
         X_final[i] = X_cir[-1]
-        _, S = S_scheme(S_0, rf, cor, t_cir, X_cir, dW_V)
-        S_final[i] = S[-1]
+
+        _, S = single_heston_log(S_0, rf, cor, t_cir, X_cir, dW_V)
+        S_final[0, i] = S[-1]
+        _, S = single_heston_milstein(S_0, rf, cor, t_cir, X_cir, dW_V)
+        S_final[1, i] = S[-1]
     
     return S_final, X_final, h_mean_total/M
     #return t_cir, X_cir, dW_V
@@ -141,7 +151,7 @@ def heston_log(S_0, r, t, W_S, CIR):
     return np.exp(X_em)
 
 
-@njit
+#@njit
 def fs_heston_final_time(scheme, S_scheme, k, lamda, theta, X_0, T, S_0, rf, cor, N, M, batches):
     X_T = np.zeros(M*batches)
     for i in range(batches):
