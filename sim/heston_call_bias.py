@@ -22,12 +22,12 @@ X_0 = 0.010201
 T = 1
 rho = 1/2**6
 
-r = 1
+r = 2
 S_0 = 100
 rf = 0.0319
 cor = -0.70
 true_price = 6.8061
-num_paths = 1000000
+num_paths = 100000
 
 h_max_arr = T/np.array([100, 400, 1600])
 

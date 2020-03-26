@@ -5,7 +5,7 @@ from tqdm import tqdm
 import scipy.stats as stats
 import time
 
-
+np.random.seed(4090)
 def timestamp():
     return time.strftime("%m-%d_%H-%M")
 
@@ -42,18 +42,18 @@ def record_convergence(scheme, k, lamda, T, X_0, n, M, f_range, num_alphas, name
                alphas,
                delimiter=",")
 
-    t1s = np.vstack([f_range, t1s])
-    np.savetxt(f"alphas/t1s/{name}_{timestamp()}_{k:.1f}_{lamda:.1f}_{T}_{X_0}_{n}_{M}.csv", 
-               t1s,
-               delimiter=",")
+    #t1s = np.vstack([f_range, t1s])
+    #np.savetxt(f"alphas/t1s/{name}_{timestamp()}_{k:.1f}_{lamda:.1f}_{T}_{X_0}_{n}_{M}.csv", 
+    #           t1s,
+    #           delimiter=",")
 
-    t2s = np.vstack([f_range, t2s])
-    np.savetxt(f"alphas/t2s/{name}_{timestamp()}_{k:.1f}_{lamda:.1f}_{T}_{X_0}_{n}_{M}.csv", 
-               t2s,
-               delimiter=",")
+    #t2s = np.vstack([f_range, t2s])
+    #np.savetxt(f"alphas/t2s/{name}_{timestamp()}_{k:.1f}_{lamda:.1f}_{T}_{X_0}_{n}_{M}.csv", 
+    #          t2s,
+    #          delimiter=",")
+
 
 start = time.time()
-# Explicit method            
 record_convergence(
     k = 1,
     lamda = 1,
@@ -62,12 +62,10 @@ record_convergence(
     n = 200,
     M = 3000,
     f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
-    scheme=explicit_scheme,
+    scheme=higham_mao,
     num_alphas=30,
-    name="Ezero"
+    name="higham_mao"
 )
-
-# Implicit Method
 record_convergence(
     k = 1,
     lamda = 1,
@@ -76,12 +74,10 @@ record_convergence(
     n = 200,
     M = 3000,
     f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
-    scheme=implicit_scheme,
+    scheme=absorption,
     num_alphas=30,
-    name="driftimpsqrt"
+    name="absorption"
 )
-
-# Diop
 record_convergence(
     k = 1,
     lamda = 1,
@@ -90,12 +86,10 @@ record_convergence(
     n = 200,
     M = 3000,
     f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
-    scheme=diop,
+    scheme=full_truncation,
     num_alphas=30,
-    name="diop"
+    name="full_truncation"
 )
-
-# D-D
 record_convergence(
     k = 1,
     lamda = 1,
@@ -104,10 +98,65 @@ record_convergence(
     n = 200,
     M = 3000,
     f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
-    scheme=deelstra_delbaen,
+    scheme=bossy,
     num_alphas=30,
-    name="deelstradelbaen"
+    name="bossy"
 )
+#Explicit method            
+#record_convergence(
+#    k = 1,
+#    lamda = 1,
+#    T = 1,
+#    X_0 = 1,
+#    n = 200,
+#    M = 3000,
+#    f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
+#    scheme=explicit_scheme,
+#    num_alphas=30,
+#    name="Ezero"
+#)
+#
+## Implicit Method
+#record_convergence(
+#    k = 1,
+#    lamda = 1,
+#    T = 1,
+#    X_0 = 1,
+#    n = 200,
+#    M = 3000,
+#    f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
+#    scheme=implicit_scheme,
+#    num_alphas=30,
+#    name="driftimpsqrt"
+#)
+#
+## Diop
+#record_convergence(
+#    k = 1,
+#    lamda = 1,
+#    T = 1,
+#    X_0 = 1,
+#    n = 200,
+#    M = 3000,
+#    f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
+#    scheme=diop,
+#    num_alphas=30,
+#    name="diop"
+#)
+#
+## D-D
+#record_convergence(
+#    k = 1,
+#    lamda = 1,
+#    T = 1,
+#    X_0 = 1,
+#    n = 200,
+#    M = 3000,
+#    f_range = np.concatenate([np.array([0.001, 0.01, 0.1]), np.arange(0.2, 3.4, 0.2)]),
+#    scheme=deelstra_delbaen,
+#    num_alphas=30,
+#    name="deelstradelbaen"
+#)
 
 end = time.time() - start
 print(end)
